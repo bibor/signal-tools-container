@@ -38,7 +38,7 @@ RUN checkcmd git && \
 RUN useradd -m signals && echo "signals:signals" | chpasswd && adduser signals sudo &&\
 	usermod -a -G video signals
 
-##### build GNURadio #####
+##### git #####
 user signals
 RUN mkdir -p /home/signals/src/gnuradio 
 WORKDIR /home/signals/src/gnuradio
@@ -56,6 +56,19 @@ RUN git clone --progress  https://github.com/EttusResearch/uhd && \
 	git clone --progress git://git.osmocom.org/gr-iqbal.git && \
 	git clone https://github.com/Nuand/bladeRF.git 
 #line 608
+WORKDIR /home/signals/src/gnuradio/gr-iqbal
+RUN git submodule init && \
+	git submodule update
+WORKDIR /home/signals/src/gnuradio
+RUN git clone --progress https://github.com/mossmann/hackrf.git && \
+	mkdir airspy && \
+	cd  airspy && \
+	git clone https://github.com/airspy/host && \
+
+
+
+
+
 
 
 
