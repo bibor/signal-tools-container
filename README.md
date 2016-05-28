@@ -8,6 +8,11 @@
 * rf
 	* gnuradio
 		* gr-baz
+	* rtl-sdr
+		* gr-osmocom
+		* hackrf
+		* bladerf
+		* UHD
 	* gqrx
 * Networking
 	* Wireshark
