@@ -1,6 +1,12 @@
 #signal testbench
 #todo:
-#	pulling the gr-install script from own signed repo
+#	install scrip substitute
+#		mod_groups
+#		mod_sysctl
+#		pythonpath
+#		mod_udev
+#		extras
+#		firmware
 #	usefull bashrc
 #	plugdev group?
 #	sigrok
