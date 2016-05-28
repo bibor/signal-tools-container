@@ -43,7 +43,8 @@ user signals
 RUN mkdir -p /home/signals/src/gnuradio 
 WORKDIR /home/signals/src/gnuradio
 RUN export v=Master/HEAD &&\
-	export PULLED_LIST="gnuradio uhd rtl-sdr gr-osmosdr gr-iqbal hackrf gr-baz bladeRF libairspy"
+	export PULLED_LIST="gnuradio uhd rtl-sdr gr-osmosdr gr-iqbal hackrf gr-baz bladeRF libairspy" && \
+	export JFLAG=4
 
 RUN git clone --progress --recursive http://git.gnuradio.org/git/gnuradio.git
 WORKDIR /home/signals/src/gnuradio/gnuradio
@@ -64,6 +65,19 @@ RUN git clone --progress https://github.com/mossmann/hackrf.git && \
 	mkdir airspy && \
 	cd  airspy && \
 	git clone https://github.com/airspy/host && \
+
+#### uhd build ####
+WORKDIR /home/signals/src/gnuradio/uhd
+RUN git checkout && mkdir -p ./host/build 
+WORKDIR /home/signals/src/gnuradio/uhd/host/build
+RUN make clean && \
+	cmake $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2  $UCFLAGS ../ && \
+	make clean && \
+	make -j$JFLAG 
+USER root
+RUN sudo rm -f /usr/local/lib*/libuhd* && \
+	sudo make $JFLAG install && \
+	sudo ldconfig
 
 
 
