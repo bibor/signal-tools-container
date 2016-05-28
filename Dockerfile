@@ -50,13 +50,11 @@ RUN git clone --progress --recursive http://git.gnuradio.org/git/gnuradio.git
 WORKDIR /home/signals/src/gnuradio/gnuradio
 RUN git checkout maint
 WORKDIR /home/signals/src/gnuradio
-# line 540
 RUN git clone --progress  https://github.com/EttusResearch/uhd && \
 	git clone --progress git://git.osmocom.org/rtl-sdr && \
 	git clone --progress git://git.osmocom.org/gr-osmosdr  && \
 	git clone --progress git://git.osmocom.org/gr-iqbal.git && \
 	git clone https://github.com/Nuand/bladeRF.git 
-#line 608
 WORKDIR /home/signals/src/gnuradio/gr-iqbal
 RUN git submodule init && \
 	git submodule update
@@ -80,13 +78,66 @@ RUN sudo rm -f /usr/local/lib*/libuhd* && \
 	sudo ldconfig
 
 
+#### rtl build ####
+
+### rtl-sdr ###
+USER signals
+WORKDIR /home/signals/src/gnuradio/rtl-sdr
+RUN cmake $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 . && \ 
+	make clean && \
+	make $JFLAG
+USER root
+RUN sudo make install
+
+### hackrf ###
+USER signals
+WORKDIR /home/signals/src/gnuradio/hackrf
+RUN cmake $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 -DINSTALL_UDEV_RULES=ON host/ && \
+		make clean && \
+		make 
+USER root
+RUN make install
+
+### gr-iqbal ###
+USER signals
+RUN mkdir -p /home/signals/src/gnuradio/gr-iqbal/build
+WORKDIR /home/signals/src/gnuradio/gr-iqbal/build
+
+RUN	cmake .. $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
+		make clean && \
+		make
+USER root
+RUN sudo make install
+
+### bladeRF ###
+USER signals
+WORKDIR /home/signals/src/gnuradio/bladeRF/host
+RUN	cmake . $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
+		make clean && \ 
+		make 
+USER root
+RUN sudo make install
+
+### airspy ###
+USER signals
+RUN mkdir -p  /home/signals/src/gnuradio/airspy/host/build
+WORKDIR /home/signals/src/gnuradio/airspy/host/build
+RUN	cmake . $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
+		make clean && \ 
+		make 
+USER root
+RUN sudo make install
+
+### gr-osmosdr ###
+WORKDIR /home/signals/src/gnuradio/gr-osmosdr
+RUN	cmake . $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
+		make clean && \ 
+		make 
+USER root
+RUN sudo make install &&
+	sudo ldconfig
 
 
-
-
-
-
-RUN axel http://www.sbrac.org/files/build-gnuradio && chmod a+x ./build-gnuradio && printf "y\ny\ny\n    y\n" | ./build-gnuradio -ja
 RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" > ~/.bashrc
 
 
