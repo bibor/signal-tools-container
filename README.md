@@ -16,4 +16,4 @@
 	* scipy
 
 ## credits
-Thanks to Marcus D. Leech who wrote the gnuradio install script.
+Thanks to Marcus D. Leech who wrote the gnuradio install script, which this container is based on.
