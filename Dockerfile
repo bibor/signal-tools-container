@@ -138,6 +138,30 @@ RUN sudo make install &&
 	sudo ldconfig
 
 
+#### gnuradio build
+USER signals 
+WORKDIR /home/signals/src/gnuradio/gnuradio
+RUN git checkout
+USER root
+RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf && \
+	echo "/usr/local/lib64" >> /etc/ld.so.conf.d/local.conf && \
+	sudo ldconfig
+USER signals
+export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
+
+RUN mkdir build
+WORKDIR /home/signals/src/gnuradio/gnuradio/build
+RUN make clean && \ 
+	cmake -DENABLE_BAD_BOOST=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 $GCFLAGS ../ && \
+	make $JFLAG clean &&\
+	make $JFLAG
+USER root
+RUN sudo rm -rf /usr/local/include/gnuradio/ && \
+	sudo rm -f /usr/local/lib*/libgnuradio* && \
+	sudo make $JFLAG install && \
+	sudo ldconfig
+
+
 RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" > ~/.bashrc
 
 
