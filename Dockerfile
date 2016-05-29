@@ -3,7 +3,6 @@
 #	install scrip substitute
 #		mod_sysctl
 #		pythonpath
-#		mod_udev
 #		extras
 #	usefull bashrc
 #	plugdev group?
@@ -171,8 +170,19 @@ USER root
 RUN sudo -E uhd_images_downloader
 
 #### groups ####
-user root
+USER root
 RUN sudo /usr/sbin/usermod -a -G usrp signals
+
+#### udev ####
+USER root
+RUN	sudo cp /home/signals/src/gnuradio/uhd/host/utils/uhd-usrp.rules /etc/udev/rules.d/10-usrp.rules && \
+	sudo chown root /etc/udev/rules.d/10-usrp.rules && \
+	sudo chgrp root /etc/udev/rules.d/10-usrp.rules && \
+	sudo cp /home/signals/src/gnuradio/rtl-sdr/rtl-sdr.rules /etc/udev/rules.d/15-rtl-sdr.rules && \
+	sudo chown root /etc/udev/rules.d/15-rtl-sdr.rules && \
+	sudo chgrp root /etc/udev/rules.d/15-rtl-sdr.rules && \
+	sudo killall -HUP udevd && \
+	sudo udevadm control --reload-rules
 
 
 RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" > ~/.bashrc
