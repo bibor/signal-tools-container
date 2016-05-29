@@ -6,7 +6,6 @@
 #		pythonpath
 #		mod_udev
 #		extras
-#		firmware
 #	usefull bashrc
 #	plugdev group?
 #	sigrok
@@ -167,6 +166,10 @@ RUN sudo rm -rf /usr/local/include/gnuradio/ && \
 	sudo make $JFLAG install && \
 	sudo ldconfig
 
+#### firmware ####
+USER root
+#maybe the uhd downloader is not yet in path
+RUN sudo -E uhd_images_downloader
 
 RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" > ~/.bashrc
 
