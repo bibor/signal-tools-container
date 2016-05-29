@@ -1,7 +1,6 @@
 #signal testbench
 #todo:
 #	install scrip substitute
-#		mod_sysctl
 #		pythonpath
 #		extras
 #	usefull bashrc
@@ -184,6 +183,15 @@ RUN	sudo cp /home/signals/src/gnuradio/uhd/host/utils/uhd-usrp.rules /etc/udev/r
 	sudo killall -HUP udevd && \
 	sudo udevadm control --reload-rules
 
+#### sysctl ####
+RUN root
+RUN cat "net.core.rmem_max = 1000000" >> /etc/sysctl.conf && \
+	cat "net.core.wmem_max = 1000000" >> /etc/sysctl.conf && \
+	cat "kernel.shmmax = 2147483648" >> /etc/sysctl.conf && \
+	sudo sysctl -w net.core.rmem_max=1000000 && \
+	sudo sysctl -w net.core.wmem_max=1000000 && \
+	sudo sysctl -w kernel.shmmax=2147483648 && \
+	sudo cat "@usrp  - rtprio 50" >> /etc/security/limits.conf 
 
 RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" > ~/.bashrc
 
