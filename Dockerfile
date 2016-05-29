@@ -1,7 +1,6 @@
 #signal testbench
 #todo:
 #	install scrip substitute
-#		mod_groups
 #		mod_sysctl
 #		pythonpath
 #		mod_udev
@@ -170,6 +169,11 @@ RUN sudo rm -rf /usr/local/include/gnuradio/ && \
 USER root
 #maybe the uhd downloader is not yet in path
 RUN sudo -E uhd_images_downloader
+
+#### groups ####
+user root
+RUN sudo /usr/sbin/usermod -a -G usrp signals
+
 
 RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" > ~/.bashrc
 
