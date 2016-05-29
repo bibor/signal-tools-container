@@ -13,10 +13,10 @@ FROM ubuntu:16.04
 MAINTAINER bibor@bastelsuse.org
 
 RUN apt-get update && apt-get upgrade -yf && apt-get clean && apt-get autoremove                
-RUN apt-get install -y sudo git subversion axel wget zip unzip cmake build-essential #for building gnuradio
+RUN apt-get install -y sudo git subversion wget zip unzip cmake build-essential #for building gnuradio
 RUN export DEBIAN_FRONTEND=noninteractive && \
 	apt-get install -qq -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-	vim wireshark  wireshark python-scipy gqrx-sdr software-properties-common xterm #common tools
+	vim apt-utils wireshark  wireshark python-scipy gqrx-sdr software-properties-common xterm #common tools
 
 
 ##### gnuradio install script
@@ -27,13 +27,13 @@ RUN export PKGLIST="libqwt6 libfontconfig1-dev libxrender-dev libpulse-dev swig 
 RUN  for pkg in $PKGLIST; do checkpkg; done && \
 	for pkg in $PKGLIST; do sudo apt-get -y --ignore-missing install $pkg; done
 
-RUN checkcmd git && \
-	checkcmd cmake && \
-	checklib libusb 2 && \
-	checklib libboost 5 && \
-	checklib libcppunit 0 && \
-	checklib libfftw 5 && \
-	checklib libgsl 0
+#RUN checkcmd git && \
+#	checkcmd cmake && \
+#	checklib libusb 2 && \
+#	checklib libboost 5 && \
+#	checklib libcppunit 0 && \
+#	checklib libfftw 5 && \
+#	checklib libgsl 0
 
 #### add "signals" user #####
 
@@ -64,14 +64,20 @@ WORKDIR /home/signals/src/gnuradio
 RUN git clone --progress https://github.com/mossmann/hackrf.git && \
 	mkdir airspy && \
 	cd  airspy && \
-	git clone https://github.com/airspy/host && \
+	git clone https://github.com/airspy/host 
 
 #### uhd build ####
 WORKDIR /home/signals/src/gnuradio/uhd
 RUN git checkout && mkdir -p ./host/build 
 WORKDIR /home/signals/src/gnuradio/uhd/host/build
-RUN make clean && \
-	cmake $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2  $UCFLAGS ../ && \
+
+##DEBUG
+USER root
+RUN apt-get install python-pip libboost-dev --yes
+USER signals
+RUN pip install mako
+##END DEBUG
+RUN cmake $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2  $UCFLAGS ../ && \
 	make clean && \
 	make -j$JFLAG 
 USER root
