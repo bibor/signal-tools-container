@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t signal-tools-debug .
+docker build -t signal-tools .
