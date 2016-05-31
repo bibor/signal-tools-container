@@ -12,6 +12,8 @@ FROM ubuntu:16.04
 
 MAINTAINER bibor@bastelsuse.org
 
+ENV JFLAG=-j4
+
 RUN apt-get update && apt-get upgrade -yf && apt-get clean && apt-get autoremove                
 RUN apt-get install -y sudo git subversion wget zip unzip cmake build-essential #for building gnuradio
 RUN export DEBIAN_FRONTEND=noninteractive && \
@@ -45,8 +47,7 @@ user signals
 RUN mkdir -p /home/signals/src/gnuradio 
 WORKDIR /home/signals/src/gnuradio
 RUN export v=Master/HEAD &&\
-	export PULLED_LIST="gnuradio uhd rtl-sdr gr-osmosdr gr-iqbal hackrf gr-baz bladeRF libairspy" && \
-	export JFLAG=4
+	export PULLED_LIST="gnuradio uhd rtl-sdr gr-osmosdr gr-iqbal hackrf gr-baz bladeRF libairspy"
 
 RUN git clone --progress --recursive http://git.gnuradio.org/git/gnuradio.git
 WORKDIR /home/signals/src/gnuradio/gnuradio
@@ -73,13 +74,13 @@ WORKDIR /home/signals/src/gnuradio/uhd/host/build
 
 ##DEBUG
 USER root
-RUN apt-get install python-pip libboost-dev --yes
+RUN apt-get install python-pip libboost-all-dev --yes
 USER signals
 RUN pip install mako
 ##END DEBUG
 RUN cmake $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2  $UCFLAGS ../ && \
 	make clean && \
-	make -j$JFLAG 
+	make $JFLAG
 USER root
 RUN sudo rm -f /usr/local/lib*/libuhd* && \
 	sudo make $JFLAG install && \
@@ -87,6 +88,11 @@ RUN sudo rm -f /usr/local/lib*/libuhd* && \
 
 
 #### rtl build ####
+
+##DEBUG
+USER root
+RUN apt-get install libusb-1.0-0-dev --yes
+##END DEBUG
 
 ### rtl-sdr ###
 USER signals
@@ -98,6 +104,12 @@ USER root
 RUN sudo make install
 
 ### hackrf ###
+
+##DEBUG
+USER root
+RUN apt-get install pkg-config --yes
+##END DEBUG
+
 USER signals
 WORKDIR /home/signals/src/gnuradio/hackrf
 RUN cmake $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 -DINSTALL_UDEV_RULES=ON host/ && \
@@ -130,7 +142,7 @@ RUN sudo make install
 USER signals
 RUN mkdir -p  /home/signals/src/gnuradio/airspy/host/build
 WORKDIR /home/signals/src/gnuradio/airspy/host/build
-RUN	cmake . $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
+RUN	cmake .. $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
 		make clean && \ 
 		make 
 USER root
@@ -142,7 +154,7 @@ RUN	cmake . $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
 		make clean && \ 
 		make 
 USER root
-RUN sudo make install &&
+RUN sudo make install && \ 
 	sudo ldconfig
 
 
@@ -155,12 +167,11 @@ RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf && \
 	echo "/usr/local/lib64" >> /etc/ld.so.conf.d/local.conf && \
 	sudo ldconfig
 USER signals
-export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
+ENV PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
 
 RUN mkdir build
 WORKDIR /home/signals/src/gnuradio/gnuradio/build
-RUN make clean && \ 
-	cmake -DENABLE_BAD_BOOST=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 $GCFLAGS ../ && \
+RUN cmake -DENABLE_BAD_BOOST=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 $GCFLAGS ../ && \
 	make $JFLAG clean &&\
 	make $JFLAG
 USER root
@@ -172,34 +183,29 @@ RUN sudo rm -rf /usr/local/include/gnuradio/ && \
 #### firmware ####
 USER root
 #maybe the uhd downloader is not yet in path
-RUN sudo -E uhd_images_downloader
+RUN uhd_images_downloader
 
 #### groups ####
 USER root
-RUN sudo /usr/sbin/usermod -a -G usrp signals
+RUN /usr/sbin/usermod -a -G usrp signals
 
 #### udev ####
 USER root
-RUN	sudo cp /home/signals/src/gnuradio/uhd/host/utils/uhd-usrp.rules /etc/udev/rules.d/10-usrp.rules && \
-	sudo chown root /etc/udev/rules.d/10-usrp.rules && \
-	sudo chgrp root /etc/udev/rules.d/10-usrp.rules && \
-	sudo cp /home/signals/src/gnuradio/rtl-sdr/rtl-sdr.rules /etc/udev/rules.d/15-rtl-sdr.rules && \
-	sudo chown root /etc/udev/rules.d/15-rtl-sdr.rules && \
-	sudo chgrp root /etc/udev/rules.d/15-rtl-sdr.rules && \
-	sudo killall -HUP udevd && \
-	sudo udevadm control --reload-rules
+RUN	cp /home/signals/src/gnuradio/uhd/host/utils/uhd-usrp.rules /etc/udev/rules.d/10-usrp.rules && \
+	chown root /etc/udev/rules.d/10-usrp.rules && \
+	chgrp root /etc/udev/rules.d/10-usrp.rules && \
+	cp /home/signals/src/gnuradio/rtl-sdr/rtl-sdr.rules /etc/udev/rules.d/15-rtl-sdr.rules && \
+	chown root /etc/udev/rules.d/15-rtl-sdr.rules && \
+	chgrp root /etc/udev/rules.d/15-rtl-sdr.rules
 
 #### sysctl ####
-RUN root
-RUN cat "net.core.rmem_max = 1000000" >> /etc/sysctl.conf && \
-	cat "net.core.wmem_max = 1000000" >> /etc/sysctl.conf && \
-	cat "kernel.shmmax = 2147483648" >> /etc/sysctl.conf && \
-	sudo sysctl -w net.core.rmem_max=1000000 && \
-	sudo sysctl -w net.core.wmem_max=1000000 && \
-	sudo sysctl -w kernel.shmmax=2147483648 && \
-	sudo cat "@usrp  - rtprio 50" >> /etc/security/limits.conf 
+USER root
+RUN echo "net.core.rmem_max = 1000000" >> /etc/sysctl.conf && \
+	echo "net.core.wmem_max = 1000000" >> /etc/sysctl.conf && \
+	echo "kernel.shmmax = 2147483648" >> /etc/sysctl.conf && \
+	echo "@usrp  - rtprio 50" >> /etc/security/limits.conf
 
-RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" > ~/.bashrc
+RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" >> ~/.bashrc
 
 
 ##### build gr-baz #####
