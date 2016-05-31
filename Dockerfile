@@ -114,7 +114,7 @@ USER signals
 WORKDIR /home/signals/src/gnuradio/hackrf
 RUN cmake $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 -DINSTALL_UDEV_RULES=ON host/ && \
 		make clean && \
-		make 
+		make $JFLAG
 USER root
 RUN make install
 
@@ -125,7 +125,7 @@ WORKDIR /home/signals/src/gnuradio/gr-iqbal/build
 
 RUN	cmake .. $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
 		make clean && \
-		make
+		make $JFLAG
 USER root
 RUN sudo make install
 
@@ -134,7 +134,7 @@ USER signals
 WORKDIR /home/signals/src/gnuradio/bladeRF/host
 RUN	cmake . $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
 		make clean && \ 
-		make 
+		make $JFLAG
 USER root
 RUN sudo make install
 
@@ -144,7 +144,7 @@ RUN mkdir -p  /home/signals/src/gnuradio/airspy/host/build
 WORKDIR /home/signals/src/gnuradio/airspy/host/build
 RUN	cmake .. $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
 		make clean && \ 
-		make 
+		make $JFLAG
 USER root
 RUN sudo make install
 
@@ -152,7 +152,7 @@ RUN sudo make install
 WORKDIR /home/signals/src/gnuradio/gr-osmosdr
 RUN	cmake . $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
 		make clean && \ 
-		make 
+		make $JFLAG
 USER root
 RUN sudo make install && \ 
 	sudo ldconfig
