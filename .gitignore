@@ -2,3 +2,5 @@
 *.python-version
 notes
 build-*
+*.swp
+.python-version
