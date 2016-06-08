@@ -3,7 +3,7 @@
 # if you want o acces an usb device i.e. an SDR odr an Logic Analyzer you have to set $DEVICE  to the device name
 # you may want to adjust the memory
 
-#	--device=/dev/hackrf-one-1-1 \
+#	--device=/dev/<device>
 
 docker run -it \
     --net host \
@@ -12,7 +12,7 @@ docker run -it \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e DISPLAY=$DISPLAY \
     --device /dev/snd \
-	--name signal-test-hackrf \
+	--name signal-usb \
 	-v /dev/bus/usb/:/dev/bus/usb/ \
 	--privileged \
 	--security-opt "apparmor=docker-signal-tools-hackrf" \
