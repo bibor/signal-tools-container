@@ -55,7 +55,7 @@ If you want to attach to the running container execute
 #### GUI
 If you want to execute GUI Software like `gnuradio-companion` you have to get the container access to your X server
 
-	sudo xhost +loxal:
+	sudo xhost +local:
 
 #### User
 The signals user password is "signals" and the user has sudo capabilities.
