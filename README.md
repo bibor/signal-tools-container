@@ -33,19 +33,32 @@ To execute the Container run
     ./run.sh
     
 You will get a bash shell in the container
-The normal `run.sh` runs an unprivileged container, with acces to Xorg and sound but not to USB. If you want to access an UBS device like an SDR or Locic Analyzer you have to run
+The normal `run.sh` runs an unprivileged container with acces to Xorg and sound. If you want to access an USB device like an SDR or Locic Analyzer you have to run
 
     ./run-priv-usb.sh
     
 This will run a **privileged** container with acces to **ALL** your usb devices. So be carefull, because the root user in the container is virtually root outside the container! To mitigate this Problems you can apply an apparmor profile to the container (see the `run-priv-usb.sh` script).
 
-If you want to attach to the running container run
+It would be a wa better idea to pass the device with the `--device=<dev>` option but i didn't get it work yet.
+
+
+### Misc
+#### Existing Containers
+If you want to run a existing container execute
+
+	docker start signal
+    
+If you want to attach to the running container execute
 
     docker attach signal
 
-The signals user password is "signals" and the user has sudo capabilities.
+#### GUI
+If you want to execute GUI Software like `gnuradio-companion` you have to get the container access to your X server
 
-It would be a wa better idea to pass the device with the `--device=<dev>` option but i didn't get it work yet.
+	sudo xhost +loxal:
+
+#### User
+The signals user password is "signals" and the user has sudo capabilities.
 
 ## Credits
 Thanks to Marcus D. Leech who wrote the gnuradio install script, which this container is based on.
