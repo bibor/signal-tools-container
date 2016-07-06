@@ -29,13 +29,6 @@ RUN export PKGLIST="libqwt6 libfontconfig1-dev libxrender-dev libpulse-dev swig 
 RUN  for pkg in $PKGLIST; do checkpkg; done && \
 	for pkg in $PKGLIST; do sudo apt-get -y --ignore-missing install $pkg; done
 
-#RUN checkcmd git && \
-#	checkcmd cmake && \
-#	checklib libusb 2 && \
-#	checklib libboost 5 && \
-#	checklib libcppunit 0 && \
-#	checklib libfftw 5 && \
-#	checklib libgsl 0
 
 #### add "signals" user #####
 
@@ -209,10 +202,12 @@ RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" >> ~/.bashrc
 
 
 ##### build gr-baz #####
-WORKDIR /src/
+WORKDIR /home/signals/src
 RUN git clone https://github.com/balint256/gr-baz.git && mkdir -p ./gr-baz/build
 WORKDIR /src/gr-baz/build
-RUN cmake .. && make && sudo make install && sudo  ldconfig
+RUN cmake .. && make 
+USER root
+RUN sudo make install && sudo ldconfig
 
 #env and entry
 USER signals 
