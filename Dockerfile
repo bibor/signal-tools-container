@@ -204,7 +204,7 @@ RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" >> ~/.bashrc
 ##### build gr-baz #####
 WORKDIR /home/signals/src
 RUN git clone https://github.com/balint256/gr-baz.git && mkdir -p ./gr-baz/build
-WORKDIR /src/gr-baz/build
+WORKDIR /home/signals/src/gr-baz/build
 RUN cmake .. && make 
 USER root
 RUN sudo make install && sudo ldconfig
