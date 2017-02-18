@@ -4,17 +4,18 @@
 #		pythonpath
 #		extras
 #	usefull bashrc
-#	plugdev group?
+#	plugdev group? (device passthrough)
+# unpriv Xorg
 #	sigrok
 
 
-FROM ubuntu:16.04
-
+FROM phusion/baseimage:0.9.19
 MAINTAINER bibor@bastelsuse.org
 
 ENV JFLAG=-j4
 
-RUN apt-get update && apt-get upgrade -yf && apt-get clean && apt-get autoremove                
+USER root
+RUN apt-get update && apt-get upgrade -yf && apt-get clean && apt-get autoremove
 RUN apt-get install -y sudo git subversion wget zip unzip cmake build-essential #for building gnuradio
 RUN export DEBIAN_FRONTEND=noninteractive && \
 	apt-get install -qq -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
@@ -31,12 +32,21 @@ RUN  for pkg in $PKGLIST; do checkpkg; done && \
 
 
 #### add "signals" user #####
-
+# alternate user config
+# ADD user.cfg /tmp/user.cfg
+#RUN useradd -m signals && echo "$(cat /tmp/user.cfg | head -n 1 | tr -d '\n'):$(cat /tmp/user.cfg | tail -n 1 | tr -d '\n')" | chpasswd && adduser "$(cat /tmp/user.cfg | head -n 1 | tr -d '\n')" sudo &&\
+#	usermod -a -G video signals
+# RUN rm /tmp/user.cfg
 RUN useradd -m signals && echo "signals:signals" | chpasswd && adduser signals sudo &&\
 	usermod -a -G video signals
 
+#add configs
+USER  signals
+WORKDIR /home/signals/
+COPY configs/* ./
+
 ##### git #####
-user signals
+USER signals
 RUN mkdir -p /home/signals/src/gnuradio 
 WORKDIR /home/signals/src/gnuradio
 RUN export v=Master/HEAD &&\
@@ -50,7 +60,7 @@ RUN git clone --progress  https://github.com/EttusResearch/uhd && \
 	git clone --progress git://git.osmocom.org/rtl-sdr && \
 	git clone --progress git://git.osmocom.org/gr-osmosdr  && \
 	git clone --progress git://git.osmocom.org/gr-iqbal.git && \
-	git clone https://github.com/Nuand/bladeRF.git 
+	git clone https://github.com/Nuand/bladeRF.git
 WORKDIR /home/signals/src/gnuradio/gr-iqbal
 RUN git submodule init && \
 	git submodule update
@@ -58,11 +68,11 @@ WORKDIR /home/signals/src/gnuradio
 RUN git clone --progress https://github.com/mossmann/hackrf.git && \
 	mkdir airspy && \
 	cd  airspy && \
-	git clone https://github.com/airspy/host 
+	git clone https://github.com/airspy/host
 
 #### uhd build ####
 WORKDIR /home/signals/src/gnuradio/uhd
-RUN git checkout && mkdir -p ./host/build 
+RUN git checkout && mkdir -p ./host/build
 WORKDIR /home/signals/src/gnuradio/uhd/host/build
 
 ##DEBUG
@@ -144,10 +154,10 @@ RUN sudo make install
 ### gr-osmosdr ###
 WORKDIR /home/signals/src/gnuradio/gr-osmosdr
 RUN	cmake . $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
-		make clean && \ 
+		make clean && \
 		make $JFLAG
 USER root
-RUN sudo make install && \ 
+RUN sudo make install && \
 	sudo ldconfig
 
 
@@ -175,7 +185,6 @@ RUN sudo rm -rf /usr/local/include/gnuradio/ && \
 
 #### firmware ####
 USER root
-#maybe the uhd downloader is not yet in path
 RUN uhd_images_downloader
 
 #### groups ####
@@ -205,11 +214,11 @@ RUN echo "export PYTHONPATH=/usr/local/lib/python2.7/dist-packages" >> ~/.bashrc
 WORKDIR /home/signals/src
 RUN git clone https://github.com/balint256/gr-baz.git && mkdir -p ./gr-baz/build
 WORKDIR /home/signals/src/gr-baz/build
-RUN cmake .. && make 
+RUN cmake .. && make
 USER root
 RUN sudo make install && sudo ldconfig
 
 #env and entry
-USER signals 
+USER signals
 WORKDIR /home/signals/
 ENTRYPOINT      ["/bin/bash"]

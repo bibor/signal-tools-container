@@ -20,12 +20,13 @@
 	* vim
 	* scipy
 
-The container is based on Ubuntu 16.04
+This container is based on the phusion Ubuntu 16.04 base image.
 
 ## Getting started
 
 ### Building the Container
 To create the Docker container execute the `./generate.sh` script. it will build a Container named "signal tools".
+In the build process all files from the `configs` directory will be stored in  `/home/signals` in the container. This will be handy, if you want to use your own config files.
 
 ### Running the Container
 To execute the Container run
@@ -33,11 +34,11 @@ To execute the Container run
     ./run.sh
     
 You will get a bash shell in the container
-The normal `run.sh` runs an unprivileged container with acces to Xorg and sound. If you want to access an USB device like an SDR or Locic Analyzer you have to run
+The normal `run.sh` runs an unprivileged container with acces to Xorg and sound. If you want to access an USB device like an SDR or locic analyzer you have to run
 
     ./run-priv-usb.sh
     
-This will run a **privileged** container with acces to **ALL** your usb devices. So be carefull, because the root user in the container is virtually root outside the container! To mitigate this Problems you can apply an apparmor profile to the container (see the `run-priv-usb.sh` script).
+This will run a **privileged** container with acces to **ALL** your usb devices. So be carefull, because the root user in the container is virtually root outside the container! To mitigate this problems you can apply an apparmor profile to the container (see the `run-priv-usb.sh` script).
 
 It would be a wa better idea to pass the device with the `--device=<dev>` option but i didn't get it work yet.
 
