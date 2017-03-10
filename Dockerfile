@@ -1,19 +1,11 @@
-#signal testbench
-#todo:
-#	install scrip substitute
-#		pythonpath
-#		extras
-#	usefull bashrc
-#	plugdev group? (device passthrough)
-# unpriv Xorg
-#	sigrok
-
-
 FROM phusion/baseimage:0.9.19
-MAINTAINER bibor@bastelsuse.org
+LABEL maintainer "bibor@bastelsuse.org"
+LABEL version="0.2.0"
+
+# Use baseimage-docker's init system.
+CMD ["/sbin/my_init"]
 
 ENV JFLAG=-j4
-
 USER root
 RUN apt-get update && apt-get upgrade -yf && apt-get clean && apt-get autoremove
 RUN apt-get install -y sudo git subversion wget zip unzip cmake build-essential #for building gnuradio
@@ -38,12 +30,32 @@ RUN  for pkg in $PKGLIST; do checkpkg; done && \
 #	usermod -a -G video signals
 # RUN rm /tmp/user.cfg
 RUN useradd -m signals && echo "signals:signals" | chpasswd && adduser signals sudo &&\
-	usermod -a -G video signals
+	usermod -a -G video signals && \
+  chsh -s /bin/bash signals
+
+#x2goserver
+USER root
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-add-repository ppa:x2go/stable && \
+    apt-get update && \
+    apt-get install -y x2goserver x2goserver-xsession
+
+# enable ssh & regenerate kesy
+USER root
+RUN echo "PasswordAuthentication no" >> /etc/ssh/sshd_config && \
+    echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config
+RUN rm -f /etc/service/sshd/down
+RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
 
 #add configs
 USER  signals
 WORKDIR /home/signals/
-COPY configs/* ./
+RUN mkdir .ssh
+COPY configs/ssh/* ./.ssh/
+COPY configs/home/* ./
+USER root
+RUN chown -R signals /home/signals
+
 
 ##### git #####
 USER signals
@@ -218,7 +230,6 @@ RUN cmake .. && make
 USER root
 RUN sudo make install && sudo ldconfig
 
-#env and entry
-USER signals
-WORKDIR /home/signals/
-ENTRYPOINT      ["/bin/bash"]
+USER root
+RUN chown -R signals /home/signals
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
