@@ -58,5 +58,10 @@ If you want to run a existing container execute
 #### User
 The signals user password is "signals" and the user has sudo capabilities.
 
+## FAQ
+
+### Q: Why not as a VM?
+VMs have problems with io. Its hard to get gigabit-like throughputs to and from an SDR using XEN or KVM. PCI handling would be quite ok, but only on systems with an IOMMU.
+
 ## Credits
 Thanks to Marcus D. Leech who wrote the gnuradio install script, which this container is based on.
