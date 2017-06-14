@@ -59,7 +59,7 @@ RUN chown -R signals /home/signals
 
 ##### git #####
 USER signals
-RUN mkdir -p /home/signals/src/gnuradio 
+RUN mkdir -p /home/signals/src/gnuradio
 WORKDIR /home/signals/src/gnuradio
 RUN export v=Master/HEAD &&\
 	export PULLED_LIST="gnuradio uhd rtl-sdr gr-osmosdr gr-iqbal hackrf gr-baz bladeRF libairspy"
@@ -158,7 +158,7 @@ USER signals
 RUN mkdir -p  /home/signals/src/gnuradio/airspy/host/build
 WORKDIR /home/signals/src/gnuradio/airspy/host/build
 RUN	cmake .. $CMAKE_FLAG1 $CMAKE_FLAG2 $CMF1 $CMF2 && \
-		make clean && \ 
+		make clean && \
 		make $JFLAG
 USER root
 RUN sudo make install
@@ -174,7 +174,7 @@ RUN sudo make install && \
 
 
 #### gnuradio build
-USER signals 
+USER signals
 WORKDIR /home/signals/src/gnuradio/gnuradio
 RUN git checkout
 USER root
