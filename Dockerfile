@@ -230,6 +230,14 @@ RUN cmake .. && make
 USER root
 RUN sudo make install && sudo ldconfig
 
+##### gr-ccsds #####
+workdir /home/signals/src
+RUN git clone https://github.com/bibor/gr-ccsds --branch dev && mkdir -p ./gr-ccsds/build
+WORKDIR /home/signals/src/gr-ccsds/build
+RUN cmake .. && make
+user root
+RUN sudo make install
+
 USER root
 RUN chown -R signals /home/signals
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
